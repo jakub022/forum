@@ -8,7 +8,6 @@ import Browser from './Browser.tsx'
 import Post from './Post.tsx'
 import Editor from './Editor.tsx'
 import Profile from './Profile.tsx'
-import ProfileEditor from './ProfileEditor.tsx'
 import Account from './Account.tsx'
 
 createRoot(document.getElementById('root')!).render(
@@ -23,7 +22,6 @@ createRoot(document.getElementById('root')!).render(
           </Route>
           <Route path='create' element={<Editor/>}/>
           <Route path='profile'>
-            <Route index element={<ProfileEditor/>}/>
             <Route path=':profileId' element={<Profile/>}/>
           </Route>
         </Route>
