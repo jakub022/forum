@@ -5,9 +5,28 @@ import { MoveLeft } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Textarea } from "./components/ui/textarea";
 import { Separator } from "@radix-ui/react-separator";
-import { comments, posts, profiles } from "./mock-data/mock-data";
+import { comments, posts, userProfiles } from "./mock-data/mock-data";
+import {z} from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
+
+const formSchema = z.object({
+    textContent: z.string().min(10, {message: "Comment must be at least 10 characters long."}).max(500, {message: "Commment musn't be longer than 500 characters."}),
+});
 
 export default function Post(){
+
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            textContent: "",
+        }
+    });
+
+    function onSubmit(values: z.infer<typeof formSchema>){
+        console.log(values);
+    }
 
     let {postId} = useParams()
 
@@ -26,7 +45,7 @@ export default function Post(){
             updateDate = i.updatedAt;
             userId = i.userId;
 
-            for(let j of profiles){
+            for(let j of userProfiles){
                 if(i.userId === j.userId){
                     displayName = j.displayName;
                 }
@@ -37,7 +56,7 @@ export default function Post(){
     let filteredComments = comments.filter((comm)=>comm.postId === postId);
     let commentElements = filteredComments.map((comm)=>{
         let commentDisplayName = "John Doe"
-        for(let i of profiles){
+        for(let i of userProfiles){
             if(i.userId === comm.userId){
                 commentDisplayName = i.displayName;
             }
@@ -52,9 +71,19 @@ export default function Post(){
                     <Link to="../.."><Button variant="ghost" size="icon" className="size-8"><MoveLeft/></Button></Link>
                 </div>
                 <PostCard id={postId ? postId : ""} title={title} displayName={displayName} textContent={textContent} createDate={createDate} updateDate={updateDate} userId={userId}/>
-                <div className="flex flex-col items-start gap-2 w-[50%] self-start">
-                    <Textarea placeholder="Join the discussion!" />
-                    <Button variant="secondary">Submit</Button>
+                <div className="flex flex-col w-[50%]">
+                    <Form {...form}>
+                        <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(onSubmit)}>
+                            <FormField control={form.control} name="textContent" render={({field})=>(
+                                <FormItem>
+                                    <FormControl>
+                                        <Textarea placeholder="Join the discussion!" {...field}/>
+                                    </FormControl>
+                                </FormItem>
+                            )}/>
+                            <Button className="self-start" type="submit" variant="secondary">Submit</Button>
+                        </form>
+                    </Form>
                 </div>
                 <Separator />
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{filteredComments.length == 1 ? "1 Response" : `${filteredComments.length} Responses`}</h4>

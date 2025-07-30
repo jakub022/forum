@@ -1,12 +1,12 @@
 import { Link } from "react-router";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
-import { comments, posts, profiles } from "./mock-data/mock-data";
+import { comments, posts, userProfiles } from "./mock-data/mock-data";
 
 export default function Browser(){
 
     let postRows = posts.map((post)=>{
         let displayName = "anonymous";
-        for(let i of profiles){
+        for(let i of userProfiles){
             if(post.userId === i.userId){
                 displayName = i.displayName;
             }

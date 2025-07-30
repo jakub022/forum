@@ -1,10 +1,11 @@
-import { useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { Badge } from "./components/ui/badge";
-import { profiles } from "./mock-data/mock-data";
+import { comments, userProfiles } from "./mock-data/mock-data";
 import { Separator } from "@radix-ui/react-separator";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./components/ui/select";
 import { Button } from "./components/ui/button";
 import { MoveLeft } from "lucide-react";
+import CommentCard from "./Post/CommentCard";
 
 export default function Profile(){
 
@@ -13,7 +14,7 @@ export default function Profile(){
     let isModerator = false;
     let joinDate = "22.1.2024";
 
-    for(let i of profiles){
+    for(let i of userProfiles){
         if(i.userId === profileId){
             displayName = i.displayName;
             isModerator = i.modProfile;
@@ -22,6 +23,11 @@ export default function Profile(){
     }
 
     let navigate = useNavigate();
+
+    let filteredComments = comments.filter((comm)=>comm.userId === profileId);
+    let commentElements = filteredComments.map((comm)=>{
+            return <Link to={`/forum/post/${comm.postId}`}><CommentCard userId={comm.userId} id={comm.id} textContent={comm.textContent} createDate={comm.createdAt} displayName={displayName}/></Link>
+    });
 
     return (
         <div className="flex flex-col items-center">
@@ -38,8 +44,8 @@ export default function Profile(){
                 <p className="text-muted-foreground text-sm">ID:{profileId}</p>
             </div>
             <Separator />
-            <div className="flex flex-col items-start m-5 gap-3 w-[80%]">
-                <div className="flex flex-col items-center">
+            <div className="flex flex-col items-start w-[80%]">
+                <div className="flex flex-col items-start gap-3 ">
                     <Select>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Display"/>
@@ -49,6 +55,7 @@ export default function Profile(){
                             <SelectItem value="responses">Responses</SelectItem>
                         </SelectContent>
                     </Select>
+                    {commentElements}
                 </div>
             </div>
             
