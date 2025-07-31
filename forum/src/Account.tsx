@@ -1,41 +1,238 @@
 import { useNavigate } from "react-router";
 import { Button } from "./components/ui/button";
 import { MoveLeft } from "lucide-react";
-import { useAuth } from "./AuthContext";
-import { accounts, userProfiles } from "./mock-data/mock-data";
+import {useQuery, useQueryClient} from "@tanstack/react-query"
+import { useContext, useState } from "react";
+import { AuthContext } from "./AuthContext";
+import type { Profile } from "./types/types";
+import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
+import { Input } from "./components/ui/input";
+import { Label } from "./components/ui/label";
+import {z} from "zod";
+import {useForm} from "react-hook-form"
+import {zodResolver} from "@hookform/resolvers/zod"
+import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "./utils/firebase";
+
+const loginFormSchema = z.object({
+    email: z.email(),
+    password: z.string()
+});
+
+const signUpFormSchema = z.object({
+    email: z.email(),
+    username: z.string().min(6).max(20),
+    password: z.string().min(6)
+});
 
 export default function Account(){
 
+    const queryClient = useQueryClient();
+
+    const loginForm = useForm<z.infer<typeof loginFormSchema>>({
+        resolver: zodResolver(loginFormSchema),
+        defaultValues: {
+            email: "",
+            password: "",
+        }
+    });
+
+    const signUpForm = useForm<z.infer<typeof signUpFormSchema>>({
+        resolver: zodResolver(signUpFormSchema),
+        defaultValues: {
+            email: "",
+            username: "",
+            password: "",
+        }
+    })
+
+    async function onLoginSubmit(values: z.infer<typeof loginFormSchema>){
+        if(!auth){
+            alert("Authcontext error");
+            return;
+        }
+        const {email, password} = values;
+        try{
+            await signInWithEmailAndPassword(auth, email, password);
+        }catch(err){
+            alert("Login failed: " + (err as Error).message)
+        }
+    }
+
+    async function onSignUpSubmit(values: z.infer<typeof signUpFormSchema>){
+        if(!auth){
+            alert("Authcontext error");
+            return;
+        }
+        const {email, username, password} = values;
+        try{
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const uid = userCredential.user.uid;
+
+            const token = await userCredential.user.getIdToken();
+
+            const res = await fetch("http://localhost:8080/profiles", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    id: uid,
+                    displayName: username
+                })
+            });
+            if(!res.ok){
+                alert("Sign up failed on the backend.");
+            }
+
+            await queryClient.invalidateQueries({queryKey: ['account']});
+            
+        }catch(err){
+            alert("Sign up failed: " + (err as Error).message);
+        }
+    }
+
     let navigate = useNavigate();
-    let accountId = useAuth()?.accountId;
-    if(!accountId){
-        console.error("Error fetching account id!");
+
+    const authContext = useContext(AuthContext);
+    const user = authContext?.user;
+
+    const fetchAccount = async ()=>{
+        const token = await user?.getIdToken();
+        const res = await fetch("http://localhost:8080/profiles/me",{
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        if(!res.ok){
+            console.error("Error fetching account!");
+        }
+        return res.json();
     }
 
-    let account = accounts.find((acc)=>acc.id===accountId);
-    if(!account){
-        console.error("Error fetching account!");
+    const {isPending, isError, data, error } = useQuery<Profile>({
+        queryKey: ['account'],
+        queryFn: fetchAccount,
+        enabled: !!user
+    });
+
+    const [wantLogin, setWantLogin] = useState(true);
+
+    if(!user){
+        return (
+            <div className="flex flex-col items-center">
+            <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8 mt-5"><MoveLeft/></Button>
+            <Card className="w-full max-w-sm mt-3">
+                <CardHeader>
+                    <CardTitle>{wantLogin? "Login to your account" : "Sign up for an account"}</CardTitle>
+                    <CardAction>
+                        <Button onClick={()=>setWantLogin((prevWantlogin)=>!prevWantlogin)} variant="link">{wantLogin ? "Sign Up" : "Log In"}</Button>
+                    </CardAction>
+                </CardHeader>
+                <CardContent>
+                    { wantLogin ?
+                    <Form key="login" {...loginForm}>
+                        <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
+                        <div className="flex flex-col gap-6">  
+                            <FormField control={loginForm.control} name="email" render={({field})=>(
+                                <FormItem>
+                                        <FormControl>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="email">Email</Label>
+                                                <Input id="email" type="email" {...field}/>
+                                            </div>
+                                        </FormControl>
+                                </FormItem>
+                            )}/>
+                            <FormField control={loginForm.control} name="password" render={({field})=>(
+                                <FormItem>
+                                        <FormControl>
+                                            <div className="grid gap-2">
+                                                <div className="flex items-center">
+                                                    <Label htmlFor="password">Password</Label>
+                                                </div>
+                                                <Input id="password" type="password" {...field} />
+                                            </div>
+                                        </FormControl>
+                                </FormItem>
+                            )}/>
+                        </div>
+                        <Button type="submit" className="w-full mt-5">Login</Button>
+                        </form>
+                    </Form>
+                    :
+                    <Form key="signup" {...signUpForm}>
+                        <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}>
+                        <div className="flex flex-col gap-6">  
+                            <FormField control={signUpForm.control} name="email" render={({field})=>(
+                                <FormItem>
+                                        <FormControl>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="email">Email</Label>
+                                                <Input id="email" type="email" {...field}/>
+                                            </div>
+                                        </FormControl>
+                                </FormItem>
+                            )}/>
+                            <FormField control={signUpForm.control} name="username" render={({field})=>(
+                                <FormItem>
+                                        <FormControl>
+                                            <div className="grid gap-2">
+                                                <div className="flex items-center">
+                                                    <Label htmlFor="username">Username</Label>
+                                                </div>
+                                                <Input id="username" {...field} />
+                                            </div>
+                                        </FormControl>
+                                </FormItem>
+                            )}/>
+                            <FormField control={signUpForm.control} name="password" render={({field})=>(
+                                <FormItem>
+                                        <FormControl>
+                                            <div className="grid gap-2">
+                                                <div className="flex items-center">
+                                                    <Label htmlFor="password">Password</Label>
+                                                </div>
+                                                <Input id="password" type="password" {...field} />
+                                            </div>
+                                        </FormControl>
+                                </FormItem>
+                            )}/>
+                            
+                        </div>
+                        <Button type="submit" className="w-full mt-5">Sign Up</Button>
+                        </form>
+                    </Form>
+                    }
+                </CardContent>
+            </Card>
+            </div>
+        );
     }
 
-    let userProfile = userProfiles.find((prof)=>prof.userId===account?.userId);
+    if(isPending){
+        return (<>Pending..</>);
+    }
+    if(isError){
+        return (<>Error: {error.message}</>);
+    }
 
     return (
         <div className="flex flex-col items-center">
             <div className="flex flex-col my-5 items-start text-justify w-[80%] gap-3">
                 <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
-                <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">Manage your account & profile</h1>
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Account</h4>
-                <div className="flex flex-col">
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">ID: {account?.id}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Type: {account?.isModerator ? "Mod" : "User"}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Associated Profile: {account?.userId}</h4>
-                </div>
+                <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">Manage your account</h1>
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Profile</h4>
                 <div className="flex flex-col">
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Display name: {userProfile?.displayName}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Join date: {userProfile?.joinDate}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">ID: {user?.uid}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Type: {data.modProfile ? "Mod" : "User"}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Display name: {data.displayName}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Join date: {data.joinDate}</h4>
                 </div>
+                <Button variant="secondary" onClick={()=>auth.signOut()}>Sign Out</Button>
             </div>
         </div>
-    )
+    );
 }

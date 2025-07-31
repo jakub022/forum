@@ -9,32 +9,32 @@ import Post from './Post.tsx'
 import Editor from './Editor.tsx'
 import Profile from './Profile.tsx'
 import Account from './Account.tsx'
-import { AuthContext, type AuthContextInterface } from './AuthContext.tsx'
+import { AuthProvider } from './AuthContext.tsx'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-const mockAuth: AuthContextInterface = {
-  isAuthenticated: true,
-  accountId: "a1"
-}
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthContext.Provider value={mockAuth}>
-        <Routes>
-          <Route index element={<Home/>}/>
-          <Route path='forum' element={<Forum/>}>
-            <Route index element={<Browser/>}/>
-            <Route path='post'>
-             <Route path=':postId' element={<Post/>}/>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <Routes>
+            <Route index element={<Home/>}/>
+            <Route path='forum' element={<Forum/>}>
+              <Route index element={<Browser/>}/>
+              <Route path='post'>
+              <Route path=':postId' element={<Post/>}/>
+              </Route>
+              <Route path='create' element={<Editor/>}/>
+              <Route path='profile'>
+                <Route path=':profileId' element={<Profile/>}/>
+              </Route>
             </Route>
-            <Route path='create' element={<Editor/>}/>
-            <Route path='profile'>
-              <Route path=':profileId' element={<Profile/>}/>
-            </Route>
-          </Route>
-          <Route path='account' element={<Account/>}/>
-        </Routes>
-      </AuthContext.Provider>
+            <Route path='account' element={<Account/>}/>
+          </Routes>
+        </QueryClientProvider>
+      </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )
