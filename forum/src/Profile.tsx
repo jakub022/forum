@@ -6,27 +6,72 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from ".
 import { Button } from "./components/ui/button";
 import { MoveLeft } from "lucide-react";
 import CommentCard from "./Post/CommentCard";
+import type { Comment, Post, Profile } from "./types/types";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Profile(){
 
     let {profileId} = useParams()
-    let displayName = "John Doe";
-    let isModerator = false;
-    let joinDate = "22.1.2024";
-
-    for(let i of userProfiles){
-        if(i.userId === profileId){
-            displayName = i.displayName;
-            isModerator = i.modProfile;
-            joinDate = i.joinDate;
-        }
-    }
 
     let navigate = useNavigate();
 
-    let filteredComments = comments.filter((comm)=>comm.userId === profileId);
-    let commentElements = filteredComments.map((comm)=>{
-            return <Link to={`/forum/post/${comm.postId}`}><CommentCard userId={comm.userId} id={comm.id} textContent={comm.textContent} createDate={comm.createdAt} displayName={displayName}/></Link>
+    const fetchProfile = async ()=>{
+        const res = await fetch(`http://localhost:8080/profiles/${profileId}`);
+        if(!res.ok){
+            console.error("Error fetching profile!");
+        }
+        return res.json();
+    }
+
+    const fetchComments = async ()=>{
+        const res = await fetch(`http://localhost:8080/profiles/${profileId}/comments`);
+        if(!res.ok){
+            console.error("Error fetching profile comments!");
+        }
+        return res.json();
+    }
+
+    const fetchPosts = async ()=>{
+        const res = await fetch(`http://localhost:8080/profiles/${profileId}/posts`);
+        if(!res.ok){
+            console.error("Error fetching profile posts!");
+        }
+        return res.json();
+    }
+
+    const {isPending: isProfilePending, isError: isProfileError, data: profileData, error: profileError} = useQuery<Profile>({
+        queryKey: ['profile'],
+        queryFn: fetchProfile,
+    });
+
+    const {isPending: isCommentsPending, isError: isCommentsError, data: commentsData, error: commentsError} = useQuery<Comment[]>({
+        queryKey: ['comments'],
+        queryFn: fetchComments,
+    });
+
+    const {isPending: isPostsPending, isError: isPostsError, data: postsData, error: postsError} = useQuery<Post[]>({
+        queryKey: ['posts'],
+        queryFn: fetchPosts,
+    });
+
+    
+
+    if(isProfilePending || isCommentsPending || isPostsPending){
+        return (<>Pending..</>);
+    }
+
+    if(isProfileError){
+        return (<>Error: {profileError.message}</>);
+    }
+    if(isCommentsError){
+        return (<>Error: {commentsError.message}</>);
+    }
+    if(isPostsError){
+        return (<>Error: {postsError.message}</>);
+    }
+
+    let commentElements = commentsData.map((comm)=>{
+            return <Link to={`/forum/post/${comm.postId}`}><CommentCard userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName}/></Link>
     });
 
     return (
@@ -36,12 +81,12 @@ export default function Profile(){
                     <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
                 </div>
                 <div className="flex">
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mr-3">{displayName}</h4>
-                    {isModerator ? <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">Mod</Badge> : <Badge>User</Badge>}
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mr-3">{profileData.displayName}</h4>
+                    {profileData.modProfile ? <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">Mod</Badge> : <Badge>User</Badge>}
                 </div>
                 
-                <p className="leading-7 [&:not(:first-child)]:my-1">Joined: {joinDate}</p>
-                <p className="text-muted-foreground text-sm">ID:{profileId}</p>
+                <p className="leading-7 [&:not(:first-child)]:my-1">Joined: {profileData.joinDate}</p>
+                <p className="text-muted-foreground text-sm">ID:{profileData.id}</p>
             </div>
             <Separator />
             <div className="flex flex-col items-start w-[80%]">

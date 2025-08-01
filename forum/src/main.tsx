@@ -24,7 +24,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path='forum' element={<Forum/>}>
               <Route index element={<Browser/>}/>
               <Route path='post'>
-              <Route path=':postId' element={<Post/>}/>
+                <Route path=':postId' element={<Post/>}/>
               </Route>
               <Route path='create' element={<Editor/>}/>
               <Route path='profile'>

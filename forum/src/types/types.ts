@@ -1,19 +1,23 @@
 export type Profile = {
+    id: string,
     displayName: string,
     modProfile: boolean,
     joinDate: string
 }
 
 export type Post = {
-    id: string,
+    id: number,
     title: string,
     textContent: string,
     createdAt: string,
-    updatedAt: string
+    updatedAt: string,
+    profile: Profile
 }
 
 export type Comment = {
-    id: string,
+    id: number,
     textContent: string,
-    createdAt: string
+    createdAt: string,
+    profile: Profile,
+    postId: number
 }

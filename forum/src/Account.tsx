@@ -5,7 +5,7 @@ import {useQuery, useQueryClient} from "@tanstack/react-query"
 import { useContext, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import type { Profile } from "./types/types";
-import { Card, CardAction, CardContent, CardFooter, CardHeader, CardTitle } from "./components/ui/card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import {z} from "zod";
@@ -68,7 +68,6 @@ export default function Account(){
         const {email, username, password} = values;
         try{
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const uid = userCredential.user.uid;
 
             const token = await userCredential.user.getIdToken();
 
@@ -79,7 +78,6 @@ export default function Account(){
                     "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    id: uid,
                     displayName: username
                 })
             });
@@ -226,7 +224,7 @@ export default function Account(){
                 <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">Manage your account</h1>
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Profile</h4>
                 <div className="flex flex-col">
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">ID: {user?.uid}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">ID: {data.id}</h4>
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Type: {data.modProfile ? "Mod" : "User"}</h4>
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Display name: {data.displayName}</h4>
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Join date: {data.joinDate}</h4>
