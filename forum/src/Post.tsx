@@ -61,7 +61,7 @@ export default function Post(){
         const {textContent} = values;
         try{
             const token = await user.getIdToken();
-            const res = await fetch(`http://localhost:8080/posts/${postId}`, {
+            const res = await fetch(`/api/posts/${postId}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

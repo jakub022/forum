@@ -12,6 +12,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http.authorizeHttpRequests(auth->auth
+                        .requestMatchers("/", "/index.html", "/assets/**", "/vite.svg").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/profiles/me").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/profiles").authenticated()

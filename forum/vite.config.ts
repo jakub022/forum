@@ -18,5 +18,9 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
+  },
+  build: {
+    outDir: path.resolve(__dirname, "../forum-backend/src/main/resources/static"),
+    emptyOutDir: true,
   }
 })
