@@ -8,12 +8,16 @@ import { MoveLeft } from "lucide-react";
 import CommentCard from "./Post/CommentCard";
 import type { Comment, Post, Profile } from "./types/types";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import PostCard from "./Post/PostCard";
 
 export default function Profile(){
 
     let {profileId} = useParams()
 
     let navigate = useNavigate();
+
+    const [selectedTab, setSelectedTab] = useState("posts");
 
     const fetchProfile = async ()=>{
         const res = await fetch(`http://localhost:8080/profiles/${profileId}`);
@@ -74,6 +78,10 @@ export default function Profile(){
             return <Link to={`/forum/post/${comm.postId}`}><CommentCard userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName}/></Link>
     });
 
+    let postElements = postsData.map((post)=>{
+        return <Link to={`/forum/post/${post.id}`}><PostCard title={post.title} displayName={post.profile.displayName} textContent={post.textContent} createDate={post.createdAt} updateDate={post.updatedAt} userId={post.profile.id} id={post.id.toString()}/></Link>
+    })
+
     return (
         <div className="flex flex-col items-center">
             <div className="flex flex-col my-5 items-start text-justify w-[80%]">
@@ -91,7 +99,7 @@ export default function Profile(){
             <Separator />
             <div className="flex flex-col items-start w-[80%]">
                 <div className="flex flex-col items-start gap-3 ">
-                    <Select>
+                    <Select defaultValue="posts" onValueChange={(value)=>setSelectedTab(value)}>
                         <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Display"/>
                         </SelectTrigger>
@@ -100,7 +108,7 @@ export default function Profile(){
                             <SelectItem value="responses">Responses</SelectItem>
                         </SelectContent>
                     </Select>
-                    {commentElements}
+                    { selectedTab === "posts" ? postElements : commentElements}
                 </div>
             </div>
             
