@@ -39,7 +39,7 @@ export default function Editor(){
         const {title, textContent} = values;
         try{
             const token = await user?.getIdToken();
-            const res = await fetch(`http://localhost:8080/posts`, {
+            const res = await fetch(`/api/posts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

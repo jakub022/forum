@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/posts")
+@RequestMapping("/api/posts")
 public class PostController {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -27,6 +27,19 @@ public class PostController {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.profileRepository = profileRepository;
+    }
+
+    @GetMapping
+    public List<PostRequestDto> getPosts(){
+        List<Post> posts = postRepository.findTop20ByOrderByCreatedAtDesc();
+        return posts.stream().map(post ->
+        {
+            List<Comment> comments = commentRepository.findByPostId(post.getId());
+            return new PostRequestDto(new PostDto(post.getId(), post.getTitle(), post.getTextContent(), post.getCreatedAt(), post.getUpdatedAt(),
+                new ProfileDto(post.getUser().getDisplayName(), post.getUser().getModProfile(), post.getUser().getJoinDate(), post.getUser().getId())),
+                    comments.stream().map(comment -> new CommentDto(comment.getId(), comment.getTextContent(), comment.getCreatedAt(),
+                            new ProfileDto(comment.getUser().getDisplayName(), comment.getUser().getModProfile(), comment.getUser().getJoinDate(), comment.getUser().getId()), post.getId())).toList());
+        }).toList();
     }
     
     @GetMapping("/{id}")
@@ -58,6 +71,19 @@ public class PostController {
         CommentDto commentDto = new CommentDto(savedComment.getId(), savedComment.getTextContent(), savedComment.getCreatedAt(), 
                 new ProfileDto(savedComment.getUser().getDisplayName(), savedComment.getUser().getModProfile(), savedComment.getUser().getJoinDate(), savedComment.getUser().getId()), post.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(commentDto);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePost(@PathVariable Long id, Authentication authentication){
+        String userId = authentication.getName();
+        Profile profile = profileRepository.findById(userId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
+        if(profile.getModProfile()){
+            Post post = postRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
+            List<Comment> comments = commentRepository.findByPostId(post.getId());
+            commentRepository.deleteAll(comments);
+            postRepository.delete(post);
+        }
+        return ResponseEntity.noContent().build();
     }
     
     @PostMapping

@@ -71,7 +71,7 @@ export default function Account(){
 
             const token = await userCredential.user.getIdToken();
 
-            const res = await fetch("http://localhost:8080/profiles", {
+            const res = await fetch("/api/profiles", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -99,7 +99,7 @@ export default function Account(){
 
     const fetchAccount = async ()=>{
         const token = await user?.getIdToken();
-        const res = await fetch("http://localhost:8080/profiles/me",{
+        const res = await fetch("/api/profiles/me",{
             headers: {
                 "Authorization": `Bearer ${token}`
             }

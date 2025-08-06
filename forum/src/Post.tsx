@@ -31,7 +31,7 @@ export default function Post(){
     let {postId} = useParams();
 
     const fetchPost = async ()=>{
-        const res = await fetch(`http://localhost:8080/posts/${postId}`);
+        const res = await fetch(`/api/posts/${postId}`);
         if(!res.ok){
             console.error("Error fetching post!");
         }

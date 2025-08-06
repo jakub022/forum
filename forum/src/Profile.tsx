@@ -1,6 +1,5 @@
 import { Link, useNavigate, useParams } from "react-router";
 import { Badge } from "./components/ui/badge";
-import { comments, userProfiles } from "./mock-data/mock-data";
 import { Separator } from "@radix-ui/react-separator";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "./components/ui/select";
 import { Button } from "./components/ui/button";
@@ -20,7 +19,7 @@ export default function Profile(){
     const [selectedTab, setSelectedTab] = useState("posts");
 
     const fetchProfile = async ()=>{
-        const res = await fetch(`http://localhost:8080/profiles/${profileId}`);
+        const res = await fetch(`/api/profiles/${profileId}`);
         if(!res.ok){
             console.error("Error fetching profile!");
         }
@@ -28,7 +27,7 @@ export default function Profile(){
     }
 
     const fetchComments = async ()=>{
-        const res = await fetch(`http://localhost:8080/profiles/${profileId}/comments`);
+        const res = await fetch(`/api/profiles/${profileId}/comments`);
         if(!res.ok){
             console.error("Error fetching profile comments!");
         }
@@ -36,7 +35,7 @@ export default function Profile(){
     }
 
     const fetchPosts = async ()=>{
-        const res = await fetch(`http://localhost:8080/profiles/${profileId}/posts`);
+        const res = await fetch(`/api/profiles/${profileId}/posts`);
         if(!res.ok){
             console.error("Error fetching profile posts!");
         }

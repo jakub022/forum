@@ -12,17 +12,22 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         http.authorizeHttpRequests(auth->auth
-                        .requestMatchers(HttpMethod.GET, "/profiles/me").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/profiles/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/profiles").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/posts/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/posts").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/profiles/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/profiles").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/posts/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/posts/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comments/**").authenticated()
+                        .requestMatchers("/api/h2-console/**").permitAll()
                         .anyRequest().denyAll()
         )
                 .oauth2ResourceServer(oauth2->oauth2.jwt(jwt->{}))
                 .cors(cors->cors.configurationSource(corsConfigurationSource))
-                .csrf(csrf->csrf.disable());
+                .csrf(csrf->csrf.disable())
+                .headers(headers-> headers.frameOptions(frame->frame.disable()))
+        ;
         return http.build();
     }
 }

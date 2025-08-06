@@ -4,24 +4,38 @@ import { auth } from "./utils/firebase";
 
 interface AuthContextType {
     user: User | null,
-    auth: Auth | null
+    auth: Auth | null,
+    isMod: boolean,
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({children}: {children: ReactNode}){
     const [user, setUser] = useState<User | null>(null);
+    const [isMod, setIsMod] = useState(false);
 
     useEffect(()=>{
-        const unsubscribe = onAuthStateChanged(auth, (currentUser)=>{
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser)=>{
             setUser(currentUser);
+            const token = await currentUser?.getIdToken();
+            if(currentUser){
+                const res = await fetch("/api/profiles/me",{
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                    }
+                });
+                const data = await res.json();
+                setIsMod(data.modProfile == true);
+            }
+            else{
+                setIsMod(false);
+            }
         });
-
         return ()=>unsubscribe();
     }, []);
 
     return (
-        <AuthContext.Provider value={{user, auth}}>
+        <AuthContext.Provider value={{user, auth, isMod}}>
             {children}
         </AuthContext.Provider>
     );

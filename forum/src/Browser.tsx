@@ -1,32 +1,44 @@
 import { Link } from "react-router";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
-import { comments, posts, userProfiles } from "./mock-data/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { type Post } from "./types/types";
+
+interface PostRequest{
+    post: Post,
+    comments: Comment[],
+}
 
 export default function Browser(){
 
-    let postRows = posts.map((post)=>{
-        let displayName = "anonymous";
-        for(let i of userProfiles){
-            if(post.userId === i.userId){
-                displayName = i.displayName;
-            }
+    const fetchPosts = async ()=>{
+        const res = await fetch("/api/posts");
+        if(!res.ok){
+            console.error("Error fetching posts!");
         }
-        let responseCount = 0;
-        for(let i of comments){
-            if(post.id === i.postId){
-                responseCount++;
-            }
-        }
-        return (
+        return res.json();
+    }
+
+    const {isPending, isError, data, error} = useQuery<PostRequest[]>({
+        queryKey: ['newest-posts'],
+        queryFn: fetchPosts,
+    })
+
+    if(isPending){
+        return (<>Pending..</>);
+    }
+    if(isError){
+        return (<>Error: {error.message}</>);
+    }
+
+    let postRows = data.map((request)=>
         <TableRow>
-            <TableCell>{post.createdAt}</TableCell>
-            <TableCell>{post.updatedAt}</TableCell>
-            <Link to={`./post/${post.id}`}><TableCell>{post.title}</TableCell></Link>
-            <TableCell className="text-right">{responseCount}</TableCell>
-            <TableCell className="text-right"><Link to={`./profile/${post.userId}`}>{displayName}</Link></TableCell>
+            <TableCell>{request.post.createdAt}</TableCell>
+            <TableCell>{request.post.updatedAt}</TableCell>
+            <Link to={`./post/${request.post.id}`}><TableCell>{request.post.title}</TableCell></Link>
+            <TableCell className="text-right">{request.comments.length}</TableCell>
+            <TableCell className="text-right"><Link to={`./profile/${request.post.profile.id}`}>{request.post.profile.displayName}</Link></TableCell>
         </TableRow>
-        );
-    });
+    );
 
     return (
         <div>
