@@ -1,3 +1,0 @@
-2025-08-06 15:21:21.302321+02:00 jdbc[13]: exception
-org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "SELECT * FROM POST POST [*]PROFILE"; SQL statement:
-SELECT * FROM POST POST PROFILE [42000-232]
