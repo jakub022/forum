@@ -22,5 +22,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "../forum-backend/src/main/resources/static"),
     emptyOutDir: true,
-  }
+  },
+  envDir: '../'
 })
