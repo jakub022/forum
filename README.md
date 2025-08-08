@@ -6,7 +6,7 @@ A fullstack forum webapp developed to imporve skills in modern web development a
 - Frontend: React + TypeScript with React Router for site navigation
 - UI: shadcn for  UI components, Tanstack Query for efficient data fetching, and Hookform + Zod for reliable form validation
 - Authentication: Firebase with JWT for secure account management
-- Deployment: Minimal Docker setup for easy deployment Render.io
+- Deployment: Minimal Docker setup for easy deployment on Render.io
 
 
 ## Demo
