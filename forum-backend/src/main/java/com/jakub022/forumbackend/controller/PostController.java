@@ -7,6 +7,10 @@ import com.jakub022.forumbackend.entity.Profile;
 import com.jakub022.forumbackend.repository.CommentRepository;
 import com.jakub022.forumbackend.repository.PostRepository;
 import com.jakub022.forumbackend.repository.ProfileRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -30,16 +34,16 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostRequestDto> getPosts(){
-        List<Post> posts = postRepository.findTop20ByOrderByCreatedAtDesc();
-        return posts.stream().map(post ->
+    public Page<PostRequestDto> getPosts(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+        Page<Post> posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return posts.map(post ->
         {
             List<Comment> comments = commentRepository.findByPostId(post.getId());
             return new PostRequestDto(new PostDto(post.getId(), post.getTitle(), post.getTextContent(), post.getCreatedAt(), post.getUpdatedAt(),
                 new ProfileDto(post.getUser().getDisplayName(), post.getUser().getModProfile(), post.getUser().getJoinDate(), post.getUser().getId())),
                     comments.stream().map(comment -> new CommentDto(comment.getId(), comment.getTextContent(), comment.getCreatedAt(),
                             new ProfileDto(comment.getUser().getDisplayName(), comment.getUser().getModProfile(), comment.getUser().getJoinDate(), comment.getUser().getId()), post.getId())).toList());
-        }).toList();
+        });
     }
     
     @GetMapping("/{id}")
