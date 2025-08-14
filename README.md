@@ -16,13 +16,9 @@ https://forum-p7wb.onrender.com - may take a minute or two to spin up
 ## Screenshots
 Navigation around the app
 ![Navigation](docs/forum.gif)
-Forum browser with pagination and latest posts
-![Forum Browser](docs/browser.png)
-A post with comments
-![Post](docs/post.png)
 Moderator's view of a post
 ![Post (Mod View)](docs/mod.png)
-Profile page of a moderator, showing the user's posts/comments
+Profile page, showing the user's posts/comments
 ![Profile](docs/profile.png)
 
 ## Run Locally
