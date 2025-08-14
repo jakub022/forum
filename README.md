@@ -14,7 +14,8 @@ A fullstack forum webapp developed to imporve skills in modern web development a
 https://forum-p7wb.onrender.com - may take a minute or two to spin up
 
 ## Screenshots
-
+Navigation around the app
+![Navigation](docs/forum.gif)
 Forum browser with pagination and latest posts
 ![Forum Browser](docs/browser.png)
 A post with comments
