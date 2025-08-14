@@ -11,7 +11,18 @@ A fullstack forum webapp developed to imporve skills in modern web development a
 
 ## Demo
 
-https://forum-p7wb.onrender.com
+https://forum-p7wb.onrender.com - may take a minute or two to spin up
+
+## Screenshots
+
+Forum browser with pagination and latest posts
+![Forum Browser](docs/browser.png)
+A post with comments
+![Post](docs/post.png)
+Moderator's view of a post
+![Post (Mod View)](docs/mod.png)
+Profile page of a moderator, showing the user's posts/comments
+![Profile](docs/profile.png)
 
 ## Run Locally
 
