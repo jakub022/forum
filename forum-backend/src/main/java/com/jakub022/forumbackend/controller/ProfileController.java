@@ -46,14 +46,27 @@ public class ProfileController {
     public List<PostDto> getProfilePosts(@PathVariable String id){
         List<Post> posts = postRepository.findByUserId(id);
         return posts.stream().map(post -> new PostDto(post.getId(), post.getTitle(), post.getTextContent(), post.getCreatedAt(), post.getUpdatedAt(),
-                new ProfileDto(post.getUser().getDisplayName(), post.getUser().getModProfile(), post.getUser().getJoinDate(), post.getUser().getId()))).toList();
+                new ProfileDto(post.getUser().getDisplayName(), post.getUser().getModProfile(), post.getUser().getJoinDate(), post.getUser().getId()), post.getEdited())).toList();
     }
 
     @GetMapping("/{id}/comments")
     public List<CommentDto> getComments(@PathVariable String id){
         List<Comment> comments = commentRepository.findByUserId(id);
         return comments.stream().map(comment -> new CommentDto(comment.getId(), comment.getTextContent(), comment.getCreatedAt(),
-                new ProfileDto(comment.getUser().getDisplayName(), comment.getUser().getModProfile(), comment.getUser().getJoinDate(), comment.getUser().getId()), comment.getPost().getId())).toList();
+                new ProfileDto(comment.getUser().getDisplayName(), comment.getUser().getModProfile(), comment.getUser().getJoinDate(), comment.getUser().getId()),
+                comment.getPost().getId(),
+                comment.getParent() == null ? null : new ParentCommentDto(
+                        comment.getParent().getId(),
+                        comment.getParent().getTextContent(),
+                        new ProfileDto(
+                                comment.getParent().getUser().getDisplayName(),
+                                comment.getParent().getUser().getModProfile(),
+                                comment.getParent().getUser().getJoinDate(),
+                                comment.getParent().getUser().getId()
+                        )
+                ),
+                comment.getEdited()
+                )).toList();
     }
     
     @PostMapping

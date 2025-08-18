@@ -17,8 +17,13 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
+    @ManyToOne
+    @JoinColumn(name = "parent_id", nullable = true)
+    private Comment parent;
     private String textContent;
     private LocalDateTime createdAt;
+    @Column(nullable = false)
+    private boolean edited = false;
 
     public Post getPost() {
         return post;
@@ -36,6 +41,14 @@ public class Comment {
         this.user = user;
     }
 
+    public Comment getParent(){
+        return parent;
+    }
+
+    public void setParent(Comment parent){
+        this.parent = parent;
+    }
+
     public Long getId(){
         return id;
     }
@@ -50,5 +63,11 @@ public class Comment {
     }
     public void setCreatedAt(LocalDateTime createdAt){
         this.createdAt = createdAt;
-    } 
+    }
+    public boolean getEdited(){
+        return edited;
+    }
+    public void setEdited(boolean edited){
+        this.edited = edited;
+    }
 }

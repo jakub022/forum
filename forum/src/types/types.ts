@@ -11,7 +11,8 @@ export type Post = {
     textContent: string,
     createdAt: string,
     updatedAt: string,
-    profile: Profile
+    profile: Profile,
+    edited: boolean
 }
 
 export type Comment = {
@@ -19,5 +20,13 @@ export type Comment = {
     textContent: string,
     createdAt: string,
     profile: Profile,
-    postId: number
+    postId: number,
+    parent: ParentComment | null,
+    edited: boolean
+}
+
+export type ParentComment = {
+    id: number,
+    textContent: string,
+    profile: Profile
 }

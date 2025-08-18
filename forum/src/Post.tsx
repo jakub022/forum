@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router";
 import PostCard from "./Post/PostCard";
 import CommentCard from "./Post/CommentCard";
-import { MoveLeft } from "lucide-react";
+import { MoveLeft, X } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { Textarea } from "./components/ui/textarea";
 import { Separator } from "@radix-ui/react-separator";
@@ -10,10 +10,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Comment, Post } from "./types/types";
-import { useContext } from "react";
+import type { Comment, ParentComment, Post } from "./types/types";
+import { useContext, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import { auth } from "./utils/firebase";
+import { Badge } from "./components/ui/badge";
 
 const formSchema = z.object({
     textContent: z.string().min(10, {message: "Comment must be at least 10 characters long."}).max(500, {message: "Commment musn't be longer than 500 characters."}),
@@ -29,6 +30,10 @@ export default function Post(){
     const queryClient = useQueryClient();
 
     let {postId} = useParams();
+
+    const [editing, setEditing] = useState(false);
+    const [editType, setEditType] = useState<"post" | "comment">("post");
+    const [response, setResponse] = useState<ParentComment | null>(null);
 
     const fetchPost = async ()=>{
         const res = await fetch(`/api/posts/${postId}`);
@@ -68,12 +73,15 @@ export default function Post(){
                     "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    textContent: textContent
+                    textContent: textContent,
+                    parentId: response?.id
                 })
             });
             if(!res.ok){
                 alert("Comment submit failed on the backend.");
             }
+
+            setResponse(null);
             await queryClient.invalidateQueries({queryKey: ['post']});
 
         }catch(err){
@@ -89,8 +97,17 @@ export default function Post(){
     }
 
     const commentElements = data.comments.map((comm)=>{
-        return <CommentCard userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName}/>
+        return <CommentCard editFn={()=>{setEditing(true); setEditType("comment")}} lite={false} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} responseFn={()=>{setResponse({id: comm.id, textContent: comm.textContent, profile: comm.profile} as ParentComment); window.scrollTo({top: 0, left: 0, behavior: "smooth"})}} parent={comm.parent}/>
     });
+
+    if(editing){
+        return (
+            <div className="flex flex-col items-center">
+                <Button onClick={()=>setEditing(false)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Edit {editType}</h4>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col items-center">
@@ -98,9 +115,10 @@ export default function Post(){
                 <div className="self-start">
                     <Link to="../.."><Button variant="ghost" size="icon" className="size-8"><MoveLeft/></Button></Link>
                 </div>
-                <PostCard id={data.post.id.toString()} title={data.post.title} displayName={data.post.profile.displayName} textContent={data.post.textContent} createDate={data.post.createdAt} updateDate={data.post.updatedAt} userId={data.post.profile.id}/>
+                <PostCard editFn={()=>{setEditing(true); setEditType("post")}} lite={false} id={data.post.id.toString()} title={data.post.title} displayName={data.post.profile.displayName} textContent={data.post.textContent} createDate={data.post.createdAt} updateDate={data.post.updatedAt} userId={data.post.profile.id}/>
                 { user ? 
                 <div className="flex flex-col w-[50%]">
+                    {response && <Badge className="mb-1" onClick={()=>setResponse(null)} variant="secondary"><X/> Responding to: {response.profile.displayName}</Badge>}
                     <Form {...form}>
                         <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(onSubmit)}>
                             <FormField control={form.control} name="textContent" render={({field})=>(

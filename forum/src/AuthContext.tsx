@@ -6,6 +6,7 @@ interface AuthContextType {
     user: User | null,
     auth: Auth | null,
     isMod: boolean,
+    id: string
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -13,6 +14,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({children}: {children: ReactNode}){
     const [user, setUser] = useState<User | null>(null);
     const [isMod, setIsMod] = useState(false);
+    const [id, setId] = useState("");
 
     useEffect(()=>{
         const unsubscribe = onAuthStateChanged(auth, async (currentUser)=>{
@@ -26,6 +28,7 @@ export function AuthProvider({children}: {children: ReactNode}){
                 });
                 const data = await res.json();
                 setIsMod(data.modProfile == true);
+                setId(data.id);
             }
             else{
                 setIsMod(false);
@@ -35,7 +38,7 @@ export function AuthProvider({children}: {children: ReactNode}){
     }, []);
 
     return (
-        <AuthContext.Provider value={{user, auth, isMod}}>
+        <AuthContext.Provider value={{user, auth, isMod, id}}>
             {children}
         </AuthContext.Provider>
     );

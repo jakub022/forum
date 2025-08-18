@@ -18,6 +18,8 @@ public class Post {
     private String textContent;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private boolean edited = false;
 
     public Profile getUser() {
         return user;
@@ -50,6 +52,12 @@ public class Post {
     }
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+    public boolean getEdited(){
+        return edited;
+    }
+    public void setEdited(boolean edited){
+        this.edited = edited;
     }
 
     public Long getId() {
