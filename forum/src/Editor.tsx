@@ -12,7 +12,7 @@ import { AuthContext } from "./AuthContext";
 import { auth } from "./utils/firebase";
 import type { Post } from "./types/types";
 
-const formSchema = z.object({
+export const formSchema = z.object({
         title: z.string().min(10, {message: "Title must be at least 10 charactes long."}).max(50, {message: "Title musn't be longer than 50 charactes."}),
         textContent: z.string().min(10, {message: "Post must contain at least 10 charactes."}).max(500, {message: "Post musn't be longer than 500 characters."})
 });

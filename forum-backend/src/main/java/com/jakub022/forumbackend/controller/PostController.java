@@ -38,7 +38,7 @@ public class PostController {
         Page<Post> posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
         return posts.map(post ->
         {
-            List<Comment> comments = commentRepository.findByPostId(post.getId());
+            List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
             return new PostRequestDto(
                     new PostDto(
                             post.getId(),
@@ -100,7 +100,7 @@ public class PostController {
                 ),
                 post.getEdited()
         );
-        List<Comment> comments = commentRepository.findByPostId(id);
+        List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(id);
         List<CommentDto> commentDtos = comments.stream().map(comment -> new CommentDto(
                 comment.getId(),
                         comment.getTextContent(),
@@ -199,7 +199,7 @@ public class PostController {
         Profile profile = profileRepository.findById(userId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
         Post post = postRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found."));
         if(profile.getModProfile() || profile.getId().equals(post.getUser().getId())){
-            List<Comment> comments = commentRepository.findByPostId(post.getId());
+            List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
             commentRepository.deleteAll(comments);
             postRepository.delete(post);
         }

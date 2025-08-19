@@ -74,11 +74,11 @@ export default function Profile(){
     }
 
     let commentElements = commentsData.map((comm)=>{
-            return <Link to={`/forum/post/${comm.postId}`}><CommentCard lite={true} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} parent={null} responseFn={null}/></Link>
+            return <Link to={`/forum/post/${comm.postId}`}><CommentCard editFn={null} edited={comm.edited} lite={true} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} parent={null} responseFn={null}/></Link>
     });
 
     let postElements = postsData.map((post)=>{
-        return <Link to={`/forum/post/${post.id}`}><PostCard lite={true} title={post.title} displayName={post.profile.displayName} textContent={post.textContent} createDate={post.createdAt} updateDate={post.updatedAt} userId={post.profile.id} id={post.id.toString()}/></Link>
+        return <Link to={`/forum/post/${post.id}`}><PostCard editFn={null} edited={post.edited} lite={true} title={post.title} displayName={post.profile.displayName} textContent={post.textContent} createDate={post.createdAt} updateDate={post.updatedAt} userId={post.profile.id} id={post.id.toString()}/></Link>
     })
 
     return (

@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/comments")
 public class CommentController {
@@ -45,8 +47,16 @@ public class CommentController {
         Profile profile = profileRepository.findById(userId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "User doesn't exist."));
         Comment comment = commentRepository.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found."));
         if(profile.getModProfile() || profile.getId().equals(comment.getUser().getId())){
-            commentRepository.delete(comment);
+            recursiveCommentDelete(comment);
         }
         return ResponseEntity.noContent().build();
+    }
+
+    public void recursiveCommentDelete(Comment comment){
+        List<Comment> childComments = commentRepository.findByParent(comment);
+        for(Comment childComment : childComments){
+            recursiveCommentDelete(childComment);
+        }
+        commentRepository.delete(comment);
     }
 }
