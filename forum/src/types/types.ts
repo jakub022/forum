@@ -30,3 +30,5 @@ export type ParentComment = {
     textContent: string,
     profile: Profile
 }
+
+export type Category = "FRONTEND" | "GENERAL" | "BACKEND" | "DEVOPS";
