@@ -6,6 +6,7 @@ import com.jakub022.forumbackend.entity.Post;
 import com.jakub022.forumbackend.entity.Profile;
 import com.jakub022.forumbackend.mapper.CommentMapper;
 import com.jakub022.forumbackend.mapper.PostMapper;
+import com.jakub022.forumbackend.model.Category;
 import com.jakub022.forumbackend.repository.CommentRepository;
 import com.jakub022.forumbackend.repository.PostRepository;
 import com.jakub022.forumbackend.repository.ProfileRepository;
@@ -37,8 +38,14 @@ public class PostService {
         this.commentMapper = commentMapper;
     }
 
-    public Page<PostRequestDto> getPosts(Pageable pageable){
-        Page<Post> posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+    public Page<PostRequestDto> getPosts(Category category, Pageable pageable){
+        Page<Post> posts;
+        if(category == null){
+            posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+        }
+        else{
+            posts = postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+        }
         return posts.map(post -> {
             List<Comment> comments = commentRepository.findByPostIdOrderByCreatedAtAsc(post.getId());
             return new PostRequestDto(postMapper.toDto(post), commentMapper.toDtoAll(comments));

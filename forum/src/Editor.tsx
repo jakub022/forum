@@ -11,10 +11,12 @@ import { useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { auth } from "./utils/firebase";
 import type { Post } from "./types/types";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
 
 export const formSchema = z.object({
         title: z.string().min(10, {message: "Title must be at least 10 charactes long."}).max(50, {message: "Title musn't be longer than 50 charactes."}),
-        textContent: z.string().min(10, {message: "Post must contain at least 10 charactes."}).max(500, {message: "Post musn't be longer than 500 characters."})
+        textContent: z.string().min(10, {message: "Post must contain at least 10 charactes."}).max(500, {message: "Post musn't be longer than 500 characters."}),
+        category: z.enum(["GENERAL", "FRONTEND", "BACKEND", "DEVOPS"])
 });
 
 export default function Editor(){
@@ -29,6 +31,7 @@ export default function Editor(){
         defaultValues: {
             title: "",
             textContent: "",
+            category: "GENERAL"
         }
     });
 
@@ -36,7 +39,7 @@ export default function Editor(){
         if(!auth || !user){
             alert("Authcontext error");
         }
-        const {title, textContent} = values;
+        const {title, textContent, category} = values;
         try{
             const token = await user?.getIdToken();
             const res = await fetch(`/api/posts`, {
@@ -47,7 +50,8 @@ export default function Editor(){
                 },
                 body: JSON.stringify({
                     title: title,
-                    textContent: textContent
+                    textContent: textContent,
+                    category: category
                 })
             });
             if(!res.ok){
@@ -67,6 +71,23 @@ export default function Editor(){
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Create a new discussion</h4>
                 <Form {...form}>
                     <form className="flex flex-col my-5 text-justify gap-3" onSubmit={form.handleSubmit(onSubmit)}>
+                        <FormField control={form.control} name="category" render={({field})=>(
+                            <FormItem>
+                                <FormControl>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Select a category"/>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="GENERAL">General</SelectItem>
+                                            <SelectItem value="FRONTEND">Frontend</SelectItem>
+                                            <SelectItem value="BACKEND">Backend</SelectItem>
+                                            <SelectItem value="DEVOPS">DevOps</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormControl>
+                            </FormItem>
+                        )}/>
                         <FormField control={form.control} name="title" render={({field})=>(
                             <FormItem>
                                 <FormControl>

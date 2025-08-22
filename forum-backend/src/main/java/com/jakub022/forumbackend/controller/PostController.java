@@ -1,6 +1,7 @@
 package com.jakub022.forumbackend.controller;
 
 import com.jakub022.forumbackend.dtos.*;
+import com.jakub022.forumbackend.model.Category;
 import com.jakub022.forumbackend.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,8 +23,8 @@ public class PostController {
     }
 
     @GetMapping
-    public Page<PostRequestDto> getPosts(@PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
-        return postService.getPosts(pageable);
+    public Page<PostRequestDto> getPosts(@RequestParam(required = false) Category category, @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable){
+        return postService.getPosts(category, pageable);
     }
     
     @GetMapping("/{id}")
