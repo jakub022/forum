@@ -12,7 +12,8 @@ export type Post = {
     createdAt: string,
     updatedAt: string,
     profile: Profile,
-    edited: boolean
+    edited: boolean,
+    category: Category
 }
 
 export type Comment = {
@@ -30,3 +31,5 @@ export type ParentComment = {
     textContent: string,
     profile: Profile
 }
+
+export type Category = "FRONTEND" | "GENERAL" | "BACKEND" | "DEVOPS" | "ALL";

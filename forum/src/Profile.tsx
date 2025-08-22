@@ -9,6 +9,7 @@ import type { Comment, Post, Profile } from "./types/types";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import PostCard from "./Post/PostCard";
+import ProfilePicture from "./Profile/ProfilePicture";
 
 export default function Profile(){
 
@@ -88,6 +89,9 @@ export default function Profile(){
                     <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
                 </div>
                 <div className="flex">
+                    <div className="mr-1">
+                        <ProfilePicture id={profileData.id}/>
+                    </div>
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mr-3">{profileData.displayName}</h4>
                     {profileData.modProfile ? <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">Mod</Badge> : <Badge>User</Badge>}
                 </div>

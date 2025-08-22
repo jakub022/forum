@@ -1,9 +1,11 @@
 import { Link } from "react-router";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
 import { useQuery } from "@tanstack/react-query";
-import { type Post } from "./types/types";
+import { type Category, type Post } from "./types/types";
 import { useState } from "react";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { Label } from "./components/ui/label";
 
 interface PostRequest{
     post: Post,
@@ -19,18 +21,28 @@ interface PostsPage{
 export default function Browser(){
 
     const [page, setPage] = useState(0);
+    const [category, setCategory] = useState<Category>("ALL");
 
-    const fetchPosts = async (page: number)=>{
-        const res = await fetch(`/api/posts?page=${page}&size=10`);
-        if(!res.ok){
-            console.error("Error fetching posts!");
+    const fetchPosts = async (page: number, category: Category)=>{
+        if(category == "ALL"){
+            const res = await fetch(`/api/posts?page=${page}&size=10`);
+            if(!res.ok){
+                console.error("Error fetching posts!");
+            }
+            return res.json();
         }
-        return res.json();
+        else{
+            const res = await fetch(`/api/posts?page=${page}&size=10&category=${category}`);
+            if(!res.ok){
+                console.error("Error fetching posts!");
+            }
+            return res.json();
+        }
     }
 
     const {isPending, isError, data, error} = useQuery<PostsPage>({
-        queryKey: ['newest-posts', page],
-        queryFn: ()=>fetchPosts(page),
+        queryKey: ['newest-posts', page, category],
+        queryFn: ()=>fetchPosts(page, category),
     })
 
     if(isPending){
@@ -52,6 +64,21 @@ export default function Browser(){
 
     return (
         <div>
+            <div className="ml-2 mb-2 flex flex-row">
+                <Label htmlFor="categorySelector" className="mr-2 text-muted-foreground">Browsing Category</Label>
+                <Select  defaultValue="" onValueChange={(value)=>setCategory(value as Category)}>
+                    <SelectTrigger className="w-[180px]" id="categorySelector">
+                        <SelectValue placeholder="Select a category"/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="ALL">All</SelectItem>
+                        <SelectItem value="GENERAL">General</SelectItem>
+                        <SelectItem value="FRONTEND">Frontend</SelectItem>
+                        <SelectItem value="BACKEND">Backend</SelectItem>
+                        <SelectItem value="DEVOPS">DevOps</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
             <Table>
                 <TableCaption>A list of recent posts
                     <Pagination>

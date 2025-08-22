@@ -1,5 +1,6 @@
 package com.jakub022.forumbackend.entity;
 
+import com.jakub022.forumbackend.model.Category;
 import jakarta.persistence.*;
 import org.springframework.data.annotation.AccessType;
 
@@ -20,6 +21,8 @@ public class Post {
     private LocalDateTime updatedAt;
     @Column(nullable = false)
     private boolean edited = false;
+    @Enumerated(EnumType.STRING)
+    private Category category;
 
     public Profile getUser() {
         return user;
@@ -58,6 +61,12 @@ public class Post {
     }
     public void setEdited(boolean edited){
         this.edited = edited;
+    }
+    public Category getCategory(){
+        return category;
+    }
+    public void setCategory(Category category){
+        this.category = category;
     }
 
     public Long getId() {
