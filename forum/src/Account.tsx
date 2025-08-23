@@ -14,6 +14,9 @@ import {zodResolver} from "@hookform/resolvers/zod"
 import { Form, FormControl, FormField, FormItem } from "./components/ui/form";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "./utils/firebase";
+import { formatDate } from "./utils/date";
+import { useLang } from "./LangContext";
+import loc from "./utils/locale";
 
 const loginFormSchema = z.object({
     email: z.email(),
@@ -29,6 +32,8 @@ const signUpFormSchema = z.object({
 export default function Account(){
 
     const queryClient = useQueryClient();
+
+    const { lang } = useLang();
 
     const loginForm = useForm<z.infer<typeof loginFormSchema>>({
         resolver: zodResolver(loginFormSchema),
@@ -46,6 +51,18 @@ export default function Account(){
             password: "",
         }
     })
+
+    async function guestLogin(){
+        if(!auth){
+            alert("Authcontext error");
+            return;
+        }
+        try{
+            await signInWithEmailAndPassword(auth, "guest@test.com", "guest123");
+        }catch(err){
+            alert("Login failed: " + (err as Error).message)
+        }
+    }
 
     async function onLoginSubmit(values: z.infer<typeof loginFormSchema>){
         if(!auth){
@@ -124,9 +141,9 @@ export default function Account(){
             <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8 mt-5"><MoveLeft/></Button>
             <Card className="w-full max-w-sm mt-3">
                 <CardHeader>
-                    <CardTitle>{wantLogin? "Login to your account" : "Sign up for an account"}</CardTitle>
+                    <CardTitle>{wantLogin? loc("logintext", lang) : loc("signuptext", lang)}</CardTitle>
                     <CardAction>
-                        <Button onClick={()=>setWantLogin((prevWantlogin)=>!prevWantlogin)} variant="link">{wantLogin ? "Sign Up" : "Log In"}</Button>
+                        <Button onClick={()=>setWantLogin((prevWantlogin)=>!prevWantlogin)} variant="link">{wantLogin ? loc("signup", lang) : loc("login", lang)}</Button>
                     </CardAction>
                 </CardHeader>
                 <CardContent>
@@ -149,7 +166,7 @@ export default function Account(){
                                         <FormControl>
                                             <div className="grid gap-2">
                                                 <div className="flex items-center">
-                                                    <Label htmlFor="password">Password</Label>
+                                                    <Label htmlFor="password">{loc("password", lang)}</Label>
                                                 </div>
                                                 <Input id="password" type="password" {...field} />
                                             </div>
@@ -157,8 +174,9 @@ export default function Account(){
                                 </FormItem>
                             )}/>
                         </div>
-                        <Button type="submit" className="w-full mt-5">Login</Button>
+                        <Button type="submit" className="w-full mt-5">{loc("login", lang)}</Button>
                         </form>
+                        <Button onClick={guestLogin} variant="secondary" className="w-full mt-5">{loc("guest", lang)}</Button>
                     </Form>
                     :
                     <Form key="signup" {...signUpForm}>
@@ -179,7 +197,7 @@ export default function Account(){
                                         <FormControl>
                                             <div className="grid gap-2">
                                                 <div className="flex items-center">
-                                                    <Label htmlFor="username">Username</Label>
+                                                    <Label htmlFor="username">{loc("username", lang)}</Label>
                                                 </div>
                                                 <Input id="username" {...field} />
                                             </div>
@@ -191,7 +209,7 @@ export default function Account(){
                                         <FormControl>
                                             <div className="grid gap-2">
                                                 <div className="flex items-center">
-                                                    <Label htmlFor="password">Password</Label>
+                                                    <Label htmlFor="password">{loc("password", lang)}</Label>
                                                 </div>
                                                 <Input id="password" type="password" {...field} />
                                             </div>
@@ -200,7 +218,7 @@ export default function Account(){
                             )}/>
                             
                         </div>
-                        <Button type="submit" className="w-full mt-5">Sign Up</Button>
+                        <Button type="submit" className="w-full mt-5">{loc("signup", lang)}</Button>
                         </form>
                     </Form>
                     }
@@ -221,15 +239,17 @@ export default function Account(){
         <div className="flex flex-col items-center">
             <div className="flex flex-col my-5 items-start text-justify w-[80%] gap-3">
                 <Button onClick={()=>navigate(-1)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
-                <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">Manage your account</h1>
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Profile</h4>
+                <h1 className="scroll-m-20 text-center text-4xl font-extrabold tracking-tight text-balance">{loc("manage", lang)}</h1>
                 <div className="flex flex-col">
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">ID: {data.id}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Type: {data.modProfile ? "Mod" : "User"}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Display name: {data.displayName}</h4>
-                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">Join date: {data.joinDate}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">{loc("type", lang)}: {data.modProfile ? "Mod" : "User"}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">{loc("displayname", lang)}: {data.displayName}</h4>
+                    <h4 className="scroll-m-20 text-xl font-semibold tracking-tight text-muted-foreground">{loc("joindate", lang)}: {formatDate(data.joinDate)}</h4>
                 </div>
-                <Button variant="secondary" onClick={()=>auth.signOut()}>Sign Out</Button>
+                <div className="flex flex-row gap-2">
+                    <Button variant="secondary" onClick={()=>navigate(`/forum/profile/${data.id}`)}>{loc("viewprofile", lang)}</Button>
+                    <Button variant="outline" onClick={()=>auth.signOut()}>{loc("signout", lang)}</Button>
+                </div>
             </div>
         </div>
     );

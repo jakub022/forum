@@ -12,6 +12,8 @@ import { AuthContext } from "./AuthContext";
 import { auth } from "./utils/firebase";
 import type { Post } from "./types/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./components/ui/select";
+import { useLang } from "./LangContext";
+import loc from "./utils/locale";
 
 export const formSchema = z.object({
         title: z.string().min(10, {message: "Title must be at least 10 charactes long."}).max(50, {message: "Title musn't be longer than 50 charactes."}),
@@ -22,6 +24,8 @@ export const formSchema = z.object({
 export default function Editor(){
 
     const navigate = useNavigate();
+
+    const { lang } = useLang();
 
     const authContext = useContext(AuthContext);
     const user = authContext?.user;
@@ -68,7 +72,7 @@ export default function Editor(){
         <div className="flex flex-col items-center">
             <div className="flex flex-col my-5 text-justify w-[80%]">
                 <Link to="/forum/"><Button variant="ghost" size="icon" className="size-8"><MoveLeft/></Button></Link>
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Create a new discussion</h4>
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{loc("newdiscussion", lang)}</h4>
                 <Form {...form}>
                     <form className="flex flex-col my-5 text-justify gap-3" onSubmit={form.handleSubmit(onSubmit)}>
                         <FormField control={form.control} name="category" render={({field})=>(
@@ -76,10 +80,10 @@ export default function Editor(){
                                 <FormControl>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <SelectTrigger className="w-[180px]">
-                                            <SelectValue placeholder="Select a category"/>
+                                            <SelectValue placeholder={loc("selectcategory", lang)}/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="GENERAL">General</SelectItem>
+                                            <SelectItem value="GENERAL">{loc("general", lang)}</SelectItem>
                                             <SelectItem value="FRONTEND">Frontend</SelectItem>
                                             <SelectItem value="BACKEND">Backend</SelectItem>
                                             <SelectItem value="DEVOPS">DevOps</SelectItem>
@@ -91,23 +95,23 @@ export default function Editor(){
                         <FormField control={form.control} name="title" render={({field})=>(
                             <FormItem>
                                 <FormControl>
-                                    <Input placeholder="Title" {...field}/>
+                                    <Input placeholder={loc("title", lang)} {...field}/>
                                 </FormControl>
                             </FormItem>
                         )}/>
                         <FormField control={form.control} name="textContent" render={({field})=>(
                             <FormItem>
                                 <FormControl>
-                                    <Textarea placeholder="Discussion text" {...field}/>
+                                    <Textarea placeholder={loc("text", lang)} {...field}/>
                                 </FormControl>
                             </FormItem>
                         )}/>
-                        <Button className="self-start" type="submit">Submit</Button>
+                        <Button className="self-start" type="submit">{loc("submit", lang)}</Button>
                     </form>
                 </Form>
             </div>
         </div>
         :
-        <div className="flex flex-col w-[50%]">Create an account or login to post!</div>
+        <div className="flex flex-col w-[50%]">{loc("createtopost", lang)}</div>
     ;
 }
