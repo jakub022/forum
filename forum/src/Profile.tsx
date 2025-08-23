@@ -10,10 +10,15 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import PostCard from "./Post/PostCard";
 import ProfilePicture from "./Profile/ProfilePicture";
+import { formatDate } from "./utils/date";
+import { useLang } from "./LangContext";
+import loc from "./utils/locale";
 
 export default function Profile(){
 
     let {profileId} = useParams()
+
+    const { lang } = useLang();
 
     let navigate = useNavigate();
 
@@ -75,11 +80,11 @@ export default function Profile(){
     }
 
     let commentElements = commentsData.map((comm)=>{
-            return <Link to={`/forum/post/${comm.postId}`}><CommentCard editFn={null} edited={comm.edited} lite={true} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} parent={null} responseFn={null}/></Link>
+            return <Link to={`/forum/post/${comm.postId}`}><CommentCard isModerator={comm.profile.modProfile} editFn={null} edited={comm.edited} lite={true} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} parent={null} responseFn={null}/></Link>
     });
 
     let postElements = postsData.map((post)=>{
-        return <Link to={`/forum/post/${post.id}`}><PostCard editFn={null} edited={post.edited} lite={true} title={post.title} displayName={post.profile.displayName} textContent={post.textContent} createDate={post.createdAt} updateDate={post.updatedAt} userId={post.profile.id} id={post.id.toString()}/></Link>
+        return <Link to={`/forum/post/${post.id}`}><PostCard isModerator={post.profile.modProfile} category={post.category} editFn={null} edited={post.edited} lite={true} title={post.title} displayName={post.profile.displayName} textContent={post.textContent} createDate={post.createdAt} updateDate={post.updatedAt} userId={post.profile.id} id={post.id.toString()}/></Link>
     })
 
     return (
@@ -93,10 +98,10 @@ export default function Profile(){
                         <ProfilePicture id={profileData.id}/>
                     </div>
                     <h4 className="scroll-m-20 text-xl font-semibold tracking-tight mr-3">{profileData.displayName}</h4>
-                    {profileData.modProfile ? <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">Mod</Badge> : <Badge>User</Badge>}
+                    {profileData.modProfile ? <Badge variant="secondary" className="bg-blue-500 text-white dark:bg-blue-600">Mod</Badge> : <Badge>{loc("user", lang)}</Badge>}
                 </div>
                 
-                <p className="leading-7 [&:not(:first-child)]:my-1">Joined: {profileData.joinDate}</p>
+                <p className="leading-7 [&:not(:first-child)]:my-1">{loc("joined", lang)}: {formatDate(profileData.joinDate)}</p>
                 <p className="text-muted-foreground text-sm">ID:{profileData.id}</p>
             </div>
             <Separator />
@@ -104,11 +109,11 @@ export default function Profile(){
                 <div className="flex flex-col items-start gap-3 ">
                     <Select defaultValue="posts" onValueChange={(value)=>setSelectedTab(value)}>
                         <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Display"/>
+                            <SelectValue placeholder={loc("display", lang)}/>
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="posts">Posts</SelectItem>
-                            <SelectItem value="responses">Responses</SelectItem>
+                            <SelectItem value="posts">{loc("posts", lang)}</SelectItem>
+                            <SelectItem value="responses">{loc("responseplural", lang)}</SelectItem>
                         </SelectContent>
                     </Select>
                     { selectedTab === "posts" ? postElements : commentElements}

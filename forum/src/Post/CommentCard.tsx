@@ -1,7 +1,11 @@
 import { AuthContext } from "@/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader } from "@/components/ui/card";
+import { useLang } from "@/LangContext";
+import ProfilePicture from "@/Profile/ProfilePicture";
 import type { ParentComment } from "@/types/types";
+import { formatDate } from "@/utils/date";
+import loc from "@/utils/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { CornerDownRight, Pen, Reply, Trash } from "lucide-react";
 import { useContext } from "react";
@@ -17,12 +21,15 @@ interface CommentCardProps{
     responseFn: (()=>void) | null,
     editFn: (()=>void) | null,
     parent: ParentComment | null,
-    lite: boolean
+    lite: boolean,
+    isModerator: boolean
 }
 
-export default function CommentCard({displayName, textContent, createDate, id, userId, responseFn, editFn, parent, lite, edited} : CommentCardProps){
+export default function CommentCard({displayName, textContent, createDate, id, userId, responseFn, editFn, parent, lite, edited, isModerator} : CommentCardProps){
 
     const queryClient = useQueryClient();
+    
+    const { lang } = useLang();
 
     const authContext = useContext(AuthContext);
     const isMod = authContext?.isMod;
@@ -45,8 +52,9 @@ export default function CommentCard({displayName, textContent, createDate, id, u
         <Card>
             
             <CardHeader>
-                <CardDescription className="flex flex-row justify-start">
-                    <Link to={`/forum/profile/${userId}`}>{displayName}</Link>
+                <CardDescription className="flex flex-row justify-start items-center gap-1">
+                    {!lite && <ProfilePicture id={userId}/>}
+                    {isModerator ? <Link className="text-blue-500 dark:text-blue-600" to={`/forum/profile/${userId}`}>{displayName}</Link> : <Link to={`/forum/profile/${userId}`}>{displayName}</Link>}
                     <div className="flex flex-row ml-auto">
                         { !lite && (isMod || currentUserId === userId) && <Button variant="secondary" onClick={onDeleteSubmit} className="self-start ml-3" ><Trash/></Button>}
                         { !lite && currentUserId == userId && editFn && <Button variant="secondary" onClick={editFn} className="self-start ml-3" ><Pen/></Button>}
@@ -66,7 +74,7 @@ export default function CommentCard({displayName, textContent, createDate, id, u
             <CardFooter>
                 
                 <div className="flex flex-col items-start">
-                    <p className="text-muted-foreground text-sm">Created: {createDate} {edited && "(Edited)"}</p>
+                    <p className="text-muted-foreground text-sm">{loc("created", lang)}: {formatDate(createDate)} {edited && `(${loc("edited", lang)})`}</p>
                     {responseFn && user && <Button className="text-muted-foreground" variant="link" onClick={responseFn}><Reply/>Reply</Button>}
                 </div>
             </CardFooter>

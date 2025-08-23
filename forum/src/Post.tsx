@@ -17,6 +17,8 @@ import { auth } from "./utils/firebase";
 import { Badge } from "./components/ui/badge";
 import { formSchema as postSchema } from "./Editor";
 import { Input } from "./components/ui/input";
+import { useLang } from "./LangContext";
+import loc from "./utils/locale";
 
 const formSchema = z.object({
     textContent: z.string().min(10, {message: "Comment must be at least 10 characters long."}).max(500, {message: "Commment musn't be longer than 500 characters."}),
@@ -30,6 +32,8 @@ interface PostRequest{
 export default function Post(){
 
     const queryClient = useQueryClient();
+
+    const { lang } = useLang();
 
     let {postId} = useParams();
 
@@ -182,7 +186,7 @@ export default function Post(){
     }
 
     const commentElements = data.comments.map((comm)=>{
-        return <CommentCard edited={comm.edited} editFn={()=>{setEditing(true); setEditType("comment"); setEditingCommentId(comm.id); commentEditForm.reset({textContent: comm.textContent})}} lite={false} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} responseFn={()=>{setResponse({id: comm.id, textContent: comm.textContent, profile: comm.profile} as ParentComment); window.scrollTo({top: 0, left: 0, behavior: "smooth"})}} parent={comm.parent}/>
+        return <CommentCard isModerator={comm.profile.modProfile} edited={comm.edited} editFn={()=>{setEditing(true); setEditType("comment"); setEditingCommentId(comm.id); commentEditForm.reset({textContent: comm.textContent})}} lite={false} userId={comm.profile.id} id={comm.id.toString()} textContent={comm.textContent} createDate={comm.createdAt} displayName={comm.profile.displayName} responseFn={()=>{setResponse({id: comm.id, textContent: comm.textContent, profile: comm.profile} as ParentComment); window.scrollTo({top: 0, left: 0, behavior: "smooth"})}} parent={comm.parent}/>
     });
 
     if(editing){
@@ -190,25 +194,25 @@ export default function Post(){
             <div className="flex flex-col items-center">
             <div className="flex flex-col my-5 text-justify w-[80%]">
                 <Button onClick={()=>setEditing(false)} variant="ghost" size="icon" className="size-8"><MoveLeft/></Button>
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">Edit {editType}</h4>
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{loc("edit", lang)} {editType}</h4>
                 {editType == "post" ?
                     <Form {...postEditForm}>
                         <form className="flex flex-col my-5 text-justify gap-3" onSubmit={postEditForm.handleSubmit(onPostEditSubmit)}>
                             <FormField control={postEditForm.control} name="title" render={({field})=>(
                                 <FormItem>
                                     <FormControl>
-                                        <Input placeholder="Title" {...field}/>
+                                        <Input placeholder={loc("title", lang)} {...field}/>
                                     </FormControl>
                                 </FormItem>
                             )}/>
                             <FormField control={postEditForm.control} name="textContent" render={({field})=>(
                                 <FormItem>
                                     <FormControl>
-                                        <Textarea placeholder="Discussion text" {...field}/>
+                                        <Textarea placeholder={loc("text", lang)} {...field}/>
                                     </FormControl>
                                 </FormItem>
                             )}/>
-                            <Button className="self-start" type="submit" variant="secondary">Submit</Button>
+                            <Button className="self-start" type="submit" variant="secondary">{loc("submit", lang)}</Button>
                         </form>
                     </Form>
                 :
@@ -217,11 +221,11 @@ export default function Post(){
                             <FormField control={commentEditForm.control} name="textContent" render={({field})=>(
                                 <FormItem>
                                     <FormControl>
-                                        <Textarea placeholder="Join the discussion!" {...field}/>
+                                        <Textarea placeholder={loc("join", lang)} {...field}/>
                                     </FormControl>
                                 </FormItem>
                             )}/>
-                            <Button className="self-start" type="submit" variant="secondary">Submit</Button>
+                            <Button className="self-start" type="submit" variant="secondary">{loc("submit", lang)}</Button>
                         </form>
                     </Form>
                 }
@@ -236,28 +240,28 @@ export default function Post(){
                 <div className="self-start">
                     <Link to="../.."><Button variant="ghost" size="icon" className="size-8"><MoveLeft/></Button></Link>
                 </div>
-                <PostCard edited={data.post.edited} editFn={()=>{setEditing(true); setEditType("post"); postEditForm.reset({title: data.post.title, textContent: data.post.textContent})}} lite={false} id={data.post.id.toString()} title={data.post.title} displayName={data.post.profile.displayName} textContent={data.post.textContent} createDate={data.post.createdAt} updateDate={data.post.updatedAt} userId={data.post.profile.id}/>
+                <PostCard isModerator={data.post.profile.modProfile} category={data.post.category} edited={data.post.edited} editFn={()=>{setEditing(true); setEditType("post"); postEditForm.reset({title: data.post.title, textContent: data.post.textContent})}} lite={false} id={data.post.id.toString()} title={data.post.title} displayName={data.post.profile.displayName} textContent={data.post.textContent} createDate={data.post.createdAt} updateDate={data.post.updatedAt} userId={data.post.profile.id}/>
                 { user ? 
                 <div className="flex flex-col w-[50%]">
-                    {response && <Badge className="mb-1" onClick={()=>setResponse(null)} variant="secondary"><X/> Responding to: {response.profile.displayName}</Badge>}
+                    {response && <Badge className="mb-1" onClick={()=>setResponse(null)} variant="secondary"><X/> {loc("respondingto", lang)}: {response.profile.displayName}</Badge>}
                     <Form {...form}>
                         <form className="flex flex-col gap-2" onSubmit={form.handleSubmit(onSubmit)}>
                             <FormField control={form.control} name="textContent" render={({field})=>(
                                 <FormItem>
                                     <FormControl>
-                                        <Textarea placeholder="Join the discussion!" {...field}/>
+                                        <Textarea placeholder={loc("join", lang)} {...field}/>
                                     </FormControl>
                                 </FormItem>
                             )}/>
-                            <Button className="self-start" type="submit" variant="secondary">Submit</Button>
+                            <Button className="self-start" type="submit" variant="secondary">{loc("submit", lang)}</Button>
                         </form>
                     </Form>
                 </div>
                 :
-                <div className="flex flex-col w-[50%]">Create an account or login to comment!</div>
+                <div className="flex flex-col w-[50%]">{loc("createtocomment", lang)}</div>
                 }
                 <Separator />
-                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{data.comments.length == 1 ? "1 Response" : `${data.comments.length} Responses`}</h4>
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{data.comments.length == 1 ? `1 ${loc("response", lang)}` : `${data.comments.length} ${loc("responseplural", lang)}`}</h4>
                 {commentElements}
             </div>
         </div>
